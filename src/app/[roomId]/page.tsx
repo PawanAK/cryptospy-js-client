@@ -14,12 +14,15 @@ import {
 } from '@huddle01/react/hooks';
 import { Inter } from 'next/font/google';
 import { useEffect, useRef, useState } from 'react';
+import { Copy, Mic, MicOff, Video as VideoIcon, VideoOff, MonitorUp, PhoneOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export default function Home({ params }: { params: { roomId: string } }) {
   const [displayName, setDisplayName] = useState<string>('');
   const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [showCopiedToast, setShowCopiedToast] = useState(false);
 
   const { joinRoom, state } = useRoom({
     onJoin: (room) => {
@@ -43,30 +46,68 @@ export default function Home({ params }: { params: { roomId: string } }) {
     return token;
   };
 
+  const copyMeetingLink = async () => {
+    const meetingLink = window.location.href;
+    await navigator.clipboard.writeText(meetingLink);
+    setShowCopiedToast(true);
+    setTimeout(() => setShowCopiedToast(false), 2000);
+  };
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center p-4 ${inter.className}`}
-    >
-      <div className='z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex'>
-        <p className='fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30'>
-          <code className='font-mono font-bold'>{state}</code>
-        </p>
-        <div className='fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none'>
-          {state === 'idle' && (
-            <>
+    <main className={`min-h-screen bg-white ${inter.className}`}>
+      {/* Header Section */}
+      <div className='w-full border-b border-gray-200'>
+        <div className='max-w-7xl mx-auto px-4 py-3 flex items-center justify-between'>
+          <div className='flex items-center space-x-4'>
+            <div className='text-lg font-medium text-gray-900'>{state === 'connected' ? displayName : 'Join Meeting'}</div>
+            {state === 'connected' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2"
+                onClick={copyMeetingLink}
+              >
+                <Copy className="w-4 h-4" />
+                <span>Copy meeting link</span>
+              </Button>
+            )}
+            {showCopiedToast && (
+              <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-lg">
+                Meeting link copied!
+              </div>
+            )}
+          </div>
+          {state === 'connected' && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="flex items-center space-x-2"
+              onClick={() => window.location.href = '/'}
+            >
+              <PhoneOff className="w-4 h-4" />
+              <span>Leave</span>
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className='max-w-7xl mx-auto p-4'>
+        {state === 'idle' ? (
+          <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-xl shadow-lg">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Enter your name to join</h2>
+            <div className="space-y-4">
               <input
                 disabled={state !== 'idle'}
-                placeholder='Display Name'
+                placeholder='Your name'
                 type='text'
-                className='border-2 border-blue-400 rounded-lg p-2 mx-2 bg-black text-white'
+                className='w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none'
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
               />
-
-              <button
+              <Button
                 disabled={!displayName}
-                type='button'
-                className='bg-blue-500 p-2 mx-2 rounded-lg'
+                className="w-full"
                 onClick={async () => {
                   const token = await getToken();
                   await joinRoom({
@@ -75,89 +116,83 @@ export default function Home({ params }: { params: { roomId: string } }) {
                   });
                 }}
               >
-                Join Room
-              </button>
-            </>
-          )}
-
-          {state === 'connected' && (
-            <>
-              <button
-                type='button'
-                className='bg-blue-500 p-2 mx-2 rounded-lg'
-                onClick={async () => {
-                  isVideoOn ? await disableVideo() : await enableVideo();
-                }}
-              >
-                {isVideoOn ? 'Disable Video' : 'Enable Video'}
-              </button>
-              <button
-                type='button'
-                className='bg-blue-500 p-2 mx-2 rounded-lg'
-                onClick={async () => {
-                  isAudioOn ? await disableAudio() : await enableAudio();
-                }}
-              >
-                {isAudioOn ? 'Disable Audio' : 'Enable Audio'}
-              </button>
-              <button
-                type='button'
-                className='bg-blue-500 p-2 mx-2 rounded-lg'
-                onClick={async () => {
-                  shareStream
-                    ? await stopScreenShare()
-                    : await startScreenShare();
-                }}
-              >
-                {shareStream ? 'Disable Screen' : 'Enable Screen'}
-              </button>
-              <button
-                type='button'
-                className='bg-blue-500 p-2 mx-2 rounded-lg'
-                onClick={async () => {
-                  const status = isRecording
-                    ? await fetch(`/stopRecording?roomId=${params.roomId}`)
-                    : await fetch(`/startRecording?roomId=${params.roomId}`);
-
-                  const data = await status.json();
-                  console.log({ data });
-                  setIsRecording(!isRecording);
-                }}
-              >
-                {isRecording ? 'Stop Recording' : 'Start Recording'}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className='w-full mt-8 flex gap-4 justify-between items-stretch'>
-        <div className='flex-1 justify-between items-center flex flex-col'>
-          <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-            <div className='relative flex gap-2'>
-              {stream && (
-                <div className='w-1/2 mx-auto border-2 rounded-xl border-blue-400'>
-                  <Video stream={stream} className='aspect-video rounded-xl' />
-                </div>
-              )}
-              {shareStream && (
-                <div className='w-1/2 mx-auto border-2 rounded-xl border-blue-400'>
-                  <Video
-                    stream={shareStream}
-                    className='aspect-video rounded-xl'
-                  />
-                </div>
-              )}
+                Join now
+              </Button>
             </div>
           </div>
+        ) : (
+          <div className='grid grid-cols-1 lg:grid-cols-4 gap-4'>
+            {/* Video Section */}
+            <div className='lg:col-span-3 space-y-4'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                {stream && (
+                  <div className='relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50'>
+                    <Video stream={stream} className='absolute inset-0 w-full h-full object-cover' />
+                    <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg text-white text-sm">
+                      You
+                    </div>
+                  </div>
+                )}
+                {shareStream && (
+                  <div className='relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50'>
+                    <Video stream={shareStream} className='absolute inset-0 w-full h-full object-cover' />
+                    <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg text-white text-sm">
+                      Your Screen
+                    </div>
+                  </div>
+                )}
+              </div>
 
-          <div className='mt-8 mb-32 grid gap-2 text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left'>
-            {peerIds.map((peerId) =>
-              peerId ? <RemotePeer key={peerId} peerId={peerId} /> : null
+              {/* Peers Grid */}
+              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+                {peerIds.map((peerId) =>
+                  peerId ? <RemotePeer key={peerId} peerId={peerId} /> : null
+                )}
+              </div>
+
+              {/* Controls */}
+              <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-white p-4 rounded-full shadow-lg">
+                <Button
+                  variant={isAudioOn ? "outline" : "destructive"}
+                  size="icon"
+                  className="rounded-full"
+                  onClick={async () => {
+                    isAudioOn ? await disableAudio() : await enableAudio();
+                  }}
+                >
+                  {isAudioOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+                </Button>
+                <Button
+                  variant={isVideoOn ? "outline" : "destructive"}
+                  size="icon"
+                  className="rounded-full"
+                  onClick={async () => {
+                    isVideoOn ? await disableVideo() : await enableVideo();
+                  }}
+                >
+                  {isVideoOn ? <VideoIcon className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+                </Button>
+                <Button
+                  variant={shareStream ? "destructive" : "outline"}
+                  size="icon"
+                  className="rounded-full"
+                  onClick={async () => {
+                    shareStream ? await stopScreenShare() : await startScreenShare();
+                  }}
+                >
+                  <MonitorUp className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Chat Section */}
+            {state === 'connected' && (
+              <div className='lg:col-span-1'>
+                <ChatBox />
+              </div>
             )}
           </div>
-        </div>
-        {state === 'connected' && <ChatBox />}
+        )}
       </div>
     </main>
   );

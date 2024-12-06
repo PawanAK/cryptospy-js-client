@@ -10,10 +10,10 @@ function LocalMessageBubble({ message }: Props) {
   const { metadata } = useLocalPeer<TPeerMetadata>();
 
   return (
-    <div className='w-full items-end flex flex-col rounded-lg'>
-      <span className='text-white bg-blue-500 p-1 rounded-lg text-sm'>
-        {message.text}
-      </span>
+    <div className='w-full flex flex-col items-end'>
+      <div className='max-w-[80%] bg-blue-600 px-4 py-2 rounded-2xl rounded-tr-sm'>
+        <span className='text-white text-sm'>{message.text}</span>
+      </div>
     </div>
   );
 }

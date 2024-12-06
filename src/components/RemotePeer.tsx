@@ -5,36 +5,64 @@ import {
   useRemoteAudio,
   useRemoteScreenShare,
   useRemoteVideo,
+  useRemotePeer,
 } from '@huddle01/react/hooks';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
+import { MicOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type Props = {
   peerId: string;
 };
 
 const RemotePeer = ({ peerId }: Props) => {
+  const { metadata } = useRemotePeer<{ displayName: string }>({ peerId });
   const { stream } = useRemoteVideo({ peerId });
   const { stream: audioStream, state: audioState } = useRemoteAudio({ peerId });
   const { videoStream: screenVideo, audioStream: screenAudio } =
     useRemoteScreenShare({ peerId });
 
   return (
-    <div className='flex flex-col gap-2'>
+    <>
+      {/* Video Stream */}
       {stream && (
-        <Video
-          stream={stream}
-          className='border-2 rounded-xl border-white-400 aspect-video'
-        />
+        <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden group">
+          <Video
+            stream={stream}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+            <span className="bg-black/50 px-3 py-1 rounded-lg text-white text-sm">
+              {metadata?.displayName || 'Guest'}
+            </span>
+            {audioState === 'off' && (
+              <span className="bg-black/50 p-1.5 rounded-lg text-white">
+                <MicOff className="w-4 h-4" />
+              </span>
+            )}
+          </div>
+        </div>
       )}
+
+      {/* Screen Share */}
       {screenVideo && (
-        <Video
-          stream={screenVideo}
-          className='border-2 rounded-xl border-white-400 aspect-video'
-        />
+        <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
+          <Video
+            stream={screenVideo}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg text-white text-sm">
+            {metadata?.displayName || 'Guest'}'s Screen
+          </div>
+        </div>
       )}
-      {audioStream && <Audio stream={audioStream} />}
-      {screenAudio && <Audio stream={screenAudio} />}
-    </div>
+
+      {/* Audio Streams */}
+      <div className="hidden">
+        {audioStream && <Audio stream={audioStream} />}
+        {screenAudio && <Audio stream={screenAudio} />}
+      </div>
+    </>
   );
 };
 
