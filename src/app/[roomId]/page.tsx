@@ -95,20 +95,27 @@ export default function Home({ params }: { params: { roomId: string } }) {
       {/* Main Content */}
       <div className='max-w-7xl mx-auto p-4'>
         {state === 'idle' ? (
-          <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-xl shadow-lg">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Enter your name to join</h2>
-            <div className="space-y-4">
-              <input
-                disabled={state !== 'idle'}
-                placeholder='Your name'
-                type='text'
-                className='w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none'
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-              />
+          <div className="max-w-md mx-auto mt-16 p-8 bg-gradient-to-b from-white to-gray-50 rounded-2xl shadow-xl border border-gray-100">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Huddle</h2>
+              <p className="text-gray-500">Enter your name to join the meeting</p>
+            </div>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">Display Name</label>
+                <input
+                  id="displayName"
+                  disabled={state !== 'idle'}
+                  placeholder='Enter your name'
+                  type='text'
+                  className='w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-colors placeholder:text-gray-400'
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                />
+              </div>
               <Button
                 disabled={!displayName}
-                className="w-full"
+                className="w-full py-6 text-lg font-medium shadow-lg shadow-blue-500/20 transition-transform hover:scale-[1.02]"
                 onClick={async () => {
                   const token = await getToken();
                   await joinRoom({
@@ -117,7 +124,7 @@ export default function Home({ params }: { params: { roomId: string } }) {
                   });
                 }}
               >
-                Join now
+                Join Meeting
               </Button>
             </div>
           </div>
