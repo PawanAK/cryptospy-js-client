@@ -14,7 +14,7 @@ import {
 } from '@huddle01/react/hooks';
 import { Inter } from 'next/font/google';
 import { useEffect, useRef, useState } from 'react';
-import { Copy, Mic, MicOff, Video as VideoIcon, VideoOff, MonitorUp, PhoneOff } from 'lucide-react';
+import { Copy, Mic, MicOff, Video as VideoIcon, VideoOff, MonitorUp, PhoneOff, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -23,6 +23,7 @@ export default function Home({ params }: { params: { roomId: string } }) {
   const [displayName, setDisplayName] = useState<string>('');
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [showCopiedToast, setShowCopiedToast] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { joinRoom, state } = useRoom({
     onJoin: (room) => {
@@ -123,7 +124,7 @@ export default function Home({ params }: { params: { roomId: string } }) {
         ) : (
           <div className='grid grid-cols-1 lg:grid-cols-4 gap-4'>
             {/* Video Section */}
-            <div className='lg:col-span-3 space-y-4'>
+            <div className='lg:col-span-4 space-y-4'>
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                 {stream && (
                   <div className='relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50'>
@@ -182,14 +183,20 @@ export default function Home({ params }: { params: { roomId: string } }) {
                 >
                   <MonitorUp className="w-5 h-5" />
                 </Button>
+                <Button
+                  variant={isChatOpen ? "destructive" : "outline"}
+                  size="icon"
+                  className="rounded-full"
+                  onClick={() => setIsChatOpen(!isChatOpen)}
+                >
+                  <MessageCircle className="w-5 h-5" />
+                </Button>
               </div>
             </div>
 
             {/* Chat Section */}
             {state === 'connected' && (
-              <div className='lg:col-span-1'>
-                <ChatBox />
-              </div>
+              <ChatBox isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
             )}
           </div>
         )}

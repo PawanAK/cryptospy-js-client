@@ -2,17 +2,20 @@ import { TPeerMetadata } from '@/utils/types';
 import { useLocalPeer } from '@huddle01/react/hooks';
 import { TMessage } from './ChatBox';
 
-interface Props {
+interface LocalMessageBubbleProps {
   message: TMessage;
 }
 
-function LocalMessageBubble({ message }: Props) {
+function LocalMessageBubble({ message }: LocalMessageBubbleProps) {
   const { metadata } = useLocalPeer<TPeerMetadata>();
 
   return (
-    <div className='w-full flex flex-col items-end'>
-      <div className='max-w-[80%] bg-blue-600 px-4 py-2 rounded-2xl rounded-tr-sm'>
-        <span className='text-white text-sm'>{message.text}</span>
+    <div className="flex flex-col items-end space-y-1">
+      <div className="flex items-center justify-end space-x-2">
+        <span className="text-xs text-gray-500">You</span>
+      </div>
+      <div className="bg-blue-600 text-white px-4 py-2 rounded-2xl rounded-tr-sm max-w-[85%]">
+        {message.text}
       </div>
     </div>
   );
