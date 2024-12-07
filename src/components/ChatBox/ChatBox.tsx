@@ -1,5 +1,5 @@
 import { useDataMessage, useLocalPeer } from '@huddle01/react/hooks';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LocalMessageBubble from './LocalMessageBubble';
 import RemoteMessageBubble from './RemoteMessageBubble';
 import { Button } from '@/components/ui/button';
@@ -9,22 +9,79 @@ import { cn } from '@/lib/utils';
 export type TMessage = {
   text: string;
   sender: string;
+  timestamp?: string;
 };
 
-type ChatBoxProps = {
+interface ChatBoxProps {
   isOpen: boolean;
   onClose: () => void;
-};
+}
 
 function ChatBox({ isOpen, onClose }: ChatBoxProps) {
   const [messages, setMessages] = useState<TMessage[]>([]);
   const [text, setText] = useState<string>('');
 
   const { peerId } = useLocalPeer();
+
+  // Function to fetch all messages
+  const fetchMessages = async () => {
+    try {
+      console.log('Fetching messages...');
+      const response = await fetch('/api/messages', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Fetched messages:', data);
+        
+        // Only update messages if the fetched data is different from the current messages
+        if (JSON.stringify(data) !== JSON.stringify(messages)) {
+          console.log('Updating messages in state...');
+          setMessages(data);
+        } else {
+          console.log('Messages are up to date, no need to update state.');
+        }
+      } else {
+        console.error('Failed to fetch messages:', response.status);
+        // Handle error case, e.g. display an error message
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      // Handle network/unexpected errors
+    }
+  };
+
   const { sendData } = useDataMessage({
-    onMessage: (payload, from, label) => {
+    onMessage: async (payload, from, label) => {
       if (label === 'chat') {
-        setMessages((prev) => [...prev, { text: payload, sender: from }]);
+        try {
+          console.log(`Received message from ${from}:`, payload);
+          // Send message to API
+          const response = await fetch('/api/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: payload, sender: from }),
+          });
+          if (response.ok) {
+            const newMessage = await response.json();
+            console.log('New message saved:', newMessage);
+            // Add the new message to the state
+            setMessages(prev => [...prev, newMessage]);
+          } else {
+            console.error('Failed to save message:', response.status);
+            // Still show the message even if API fails
+            setMessages((prev) => [...prev, { text: payload, sender: from }]);
+          }
+        } catch (error) {
+          console.error('Failed to save message:', error);
+          // Still show the message even if API fails
+          setMessages((prev) => [...prev, { text: payload, sender: from }]);
+        }
       }
       if (label === 'server-message') {
         console.log('Recording', JSON.parse(payload)?.s3URL);
@@ -32,14 +89,55 @@ function ChatBox({ isOpen, onClose }: ChatBoxProps) {
     },
   });
 
-  const sendMessage = () => {
+  // Fetch messages on component mount and then periodically every 2 seconds
+  useEffect(() => {
+    console.log('Fetching messages on component mount...');
+    fetchMessages();
+
+    const intervalId = setInterval(() => {
+      console.log('Fetching messages periodically...');
+      fetchMessages();
+    }, 2000);
+
+    return () => {
+      console.log('Clearing message fetch interval on component unmount...');
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  const sendMessage = async () => {
     if (!text.trim()) return;
-    sendData({
-      to: '*',
-      payload: text,
-      label: 'chat',
-    });
-    setText('');
+    
+    try {
+      console.log(`Sending message:`, text);
+      // Send to API first
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text, sender: peerId }),
+      });
+      if (response.ok) {
+        const newMessage = await response.json();
+        console.log('New message saved:', newMessage);
+        // Add the new message to the state
+        setMessages(prev => [...prev, newMessage]);
+      } else {
+        console.error('Failed to send message:', response.status);
+      }
+      
+      // Then broadcast to peers
+      sendData({
+        to: '*',
+        payload: text,
+        label: 'chat',
+      });
+      
+      setText('');
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    }
   };
 
   return (
