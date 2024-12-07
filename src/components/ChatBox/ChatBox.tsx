@@ -22,6 +22,7 @@ function ChatBox({ isOpen, onClose }: ChatBoxProps) {
   const [text, setText] = useState<string>('');
 
   const { peerId } = useLocalPeer();
+  const { metadata } = useLocalPeer<TPeerMetadata>();
 
   // Function to fetch all messages
   const fetchMessages = async () => {
@@ -116,7 +117,10 @@ function ChatBox({ isOpen, onClose }: ChatBoxProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text, sender: peerId }),
+        body: JSON.stringify({ 
+          text, 
+          sender: metadata?.displayName || peerId 
+        }),
       });
       if (response.ok) {
         const newMessage = await response.json();
