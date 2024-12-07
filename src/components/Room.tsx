@@ -62,17 +62,17 @@ export default function Room({ token }: Props) {
 
   if (state === 'idle') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-lg shadow-lg">
+      <div className="flex min-h-screen items-center justify-center bg-gray-900 text-gray-100">
+        <div className="w-full max-w-md space-y-8 bg-gray-800 p-8 rounded-lg shadow-lg">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">Join Meeting</h2>
-            <p className="mt-2 text-gray-600">Enter your display name to continue</p>
+            <h2 className="text-3xl font-bold text-gray-100">Join Meeting</h2>
+            <p className="mt-2 text-gray-300">Enter your display name to continue</p>
           </div>
           <div className="space-y-4">
             <input
               type="text"
               placeholder="Display Name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
             />
@@ -93,173 +93,130 @@ export default function Room({ token }: Props) {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      {/* Main Content */}
-      <div className="flex-1 flex">
-        {/* Video Grid */}
-        <div className={cn(
-          "flex-1 p-4 grid gap-4 transition-all duration-300",
-          isChatOpen ? "mr-[320px]" : ""
-        )}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-full">
-            {/* Local Video */}
-            {isVideoOn && (
-              <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                <video
-                  ref={videoRef}
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  muted
-                />
-                <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg text-white text-sm">
-                  You
-                </div>
-              </div>
-            )}
-            
-            {/* Screen Share */}
-            {shareStream && (
-              <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                <video
-                  ref={screenRef}
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  muted
-                />
-                <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg text-white text-sm">
-                  Your Screen
-                </div>
-              </div>
-            )}
-
-            {/* Remote Peers */}
-            {peerIds.map((peerId) =>
-              peerId ? <RemotePeer key={peerId} peerId={peerId} /> : null
-            )}
-          </div>
+    <div className="min-h-screen bg-gray-900 text-gray-100">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-700">
+        <div className="flex items-center space-x-2">
+          <span className="text-lg font-medium">Huddle Meeting</span>
+          <span className="bg-green-600 text-xs px-2 py-1 rounded-full">Live</span>
         </div>
-
-        {/* Chat Sidebar */}
-        <div className={cn(
-          "fixed right-0 top-0 bottom-0 w-[320px] bg-white shadow-lg transition-transform duration-300 transform",
-          isChatOpen ? "translate-x-0" : "translate-x-full"
-        )}>
-          <ChatBox />
-        </div>
-      </div>
-
-      {/* Control Bar */}
-      <div className="h-20 bg-white border-t flex items-center justify-between px-8">
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <span>{displayName}</span>
-          <span>•</span>
-          <span>{router.query.roomId}</span>
-        </div>
-
-        <div className="flex items-center space-x-4">
-          {/* Audio Control */}
+        <div className="flex items-center space-x-2">
+          {isRecording && (
+            <div className="flex items-center space-x-2 bg-red-500/10 text-red-500 px-3 py-1 rounded-full">
+              <Record className="w-4 h-4 animate-pulse" />
+              <span className="text-sm">Recording</span>
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"
-            className={cn(
-              "rounded-full w-12 h-12",
-              !isAudioOn && "bg-red-100 text-red-600 hover:bg-red-200"
-            )}
-            onClick={() => isAudioOn ? disableAudio() : enableAudio()}
-          >
-            {isAudioOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-          </Button>
-
-          {/* Video Control */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "rounded-full w-12 h-12",
-              !isVideoOn && "bg-red-100 text-red-600 hover:bg-red-200"
-            )}
-            onClick={() => isVideoOn ? disableVideo() : enableVideo()}
-          >
-            {isVideoOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-          </Button>
-
-          {/* Screen Share */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "rounded-full w-12 h-12",
-              shareStream && "bg-blue-100 text-blue-600 hover:bg-blue-200"
-            )}
-            onClick={() => shareStream ? stopScreenShare() : startScreenShare()}
-          >
-            <Monitor className="w-5 h-5" />
-          </Button>
-
-          {/* Recording */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "rounded-full w-12 h-12",
-              isRecording && "bg-red-100 text-red-600 hover:bg-red-200"
-            )}
-            onClick={async () => {
-              const status = isRecording
-                ? await fetch(`/api/stopRecording?roomId=${router.query.roomId}`)
-                : await fetch(`/api/startRecording?roomId=${router.query.roomId}`);
-              const data = await status.json();
-              console.log({ data });
-              setIsRecording(!isRecording);
-            }}
-          >
-            <Record className="w-5 h-5" />
-          </Button>
-
-          {/* Leave Call */}
-          <Button
-            variant="destructive"
-            size="icon"
-            className="rounded-full w-12 h-12 bg-red-600 hover:bg-red-700"
-            onClick={() => router.push('/')}
-          >
-            <PhoneOff className="w-5 h-5" />
-          </Button>
-        </div>
-
-        <div className="flex items-center space-x-4">
-          {/* Chat Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "rounded-full w-12 h-12",
-              isChatOpen && "bg-gray-100"
-            )}
+            className="text-gray-300 hover:text-gray-100 hover:bg-gray-800"
             onClick={() => setIsChatOpen(!isChatOpen)}
           >
             <MessageCircle className="w-5 h-5" />
           </Button>
-
-          {/* Participants */}
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-full w-12 h-12"
+            className="text-gray-300 hover:text-gray-100 hover:bg-gray-800"
           >
             <Users className="w-5 h-5" />
           </Button>
-
-          {/* More Options */}
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-full w-12 h-12"
+            className="text-gray-300 hover:text-gray-100 hover:bg-gray-800"
           >
             <MoreVertical className="w-5 h-5" />
           </Button>
         </div>
       </div>
+
+      {/* Video Grid */}
+      <div className="flex-1 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Local Video */}
+          <div className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden group">
+            {stream && (
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                className="w-full h-full object-cover"
+              />
+            )}
+            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+              <span className="bg-black/50 px-3 py-1 rounded-lg text-white text-sm">
+                You
+              </span>
+            </div>
+          </div>
+
+          {/* Remote Peers */}
+          {peerIds.map((peerId) => (
+            <RemotePeer key={peerId} peerId={peerId} />
+          ))}
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center justify-center space-x-4 p-4 bg-gray-800 border-t border-gray-700">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "rounded-full w-12 h-12",
+            isAudioOn ? "bg-gray-700 hover:bg-gray-600" : "bg-red-500 hover:bg-red-600"
+          )}
+          onClick={() => (isAudioOn ? disableAudio() : enableAudio())}
+        >
+          {isAudioOn ? (
+            <Mic className="w-5 h-5" />
+          ) : (
+            <MicOff className="w-5 h-5" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "rounded-full w-12 h-12",
+            isVideoOn ? "bg-gray-700 hover:bg-gray-600" : "bg-red-500 hover:bg-red-600"
+          )}
+          onClick={() => (isVideoOn ? disableVideo() : enableVideo())}
+        >
+          {isVideoOn ? (
+            <Video className="w-5 h-5" />
+          ) : (
+            <VideoOff className="w-5 h-5" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full w-12 h-12 bg-gray-700 hover:bg-gray-600"
+          onClick={() => {
+            if (shareStream) {
+              stopScreenShare();
+            } else {
+              startScreenShare();
+            }
+          }}
+        >
+          <Monitor className="w-5 h-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full w-12 h-12 bg-red-500 hover:bg-red-600"
+          onClick={() => router.push('/')}
+        >
+          <PhoneOff className="w-5 h-5" />
+        </Button>
+      </div>
+
+      {/* Chat */}
+      <ChatBox isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 }

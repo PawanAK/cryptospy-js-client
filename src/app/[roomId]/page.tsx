@@ -71,184 +71,131 @@ export default function Home({ params }: { params: { roomId: string } }) {
     window.location.href = '/';
   };
 
-  return (
-    <main className={`min-h-screen bg-white ${inter.className}`}>
-      {/* Header Section */}
-      <div className='w-full border-b border-gray-200'>
-        <div className='max-w-7xl mx-auto px-4 py-3 flex items-center justify-between'>
-          <div className='flex items-center space-x-4'>
-            <div className='text-lg font-medium text-gray-900'>{state === 'connected' ? displayName : 'Join Meeting'}</div>
-            {state === 'connected' && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center space-x-2"
-                onClick={copyMeetingLink}
-              >
-                <Copy className="w-4 h-4" />
-                <span>Copy meeting link</span>
-              </Button>
-            )}
-            {showCopiedToast && (
-              <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-lg">
-                Meeting link copied!
-              </div>
-            )}
+  if (state === 'idle') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0F1117]">
+        <div className="w-full max-w-md space-y-6 p-8 bg-[#1A1C23] rounded-2xl shadow-lg">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-100">Welcome to Huddle</h2>
+            <p className="text-gray-400">Enter your name to join the meeting</p>
           </div>
-          {state === 'connected' && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="displayName" className="text-sm font-medium text-gray-300">
+                Display Name
+              </label>
+              <input
+                id="displayName"
+                type="text"
+                placeholder="Enter your name"
+                className="w-full px-4 py-3 bg-[#2A2D35] border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+              />
+            </div>
             <Button
-              variant="destructive"
-              size="sm"
-              className="flex items-center space-x-2"
-              onClick={leaveRoom}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium"
+              onClick={async () => {
+                const token = await getToken();
+                joinRoom({ roomId: params.roomId, token });
+              }}
+              disabled={!displayName.trim()}
             >
-              <PhoneOff className="w-4 h-4" />
-              <span>Leave</span>
+              Join Meeting
             </Button>
-          )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0F1117] text-gray-100">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+        <div className="flex items-center space-x-4">
+          <span className="text-lg font-medium">{displayName}</span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-gray-400 hover:text-gray-300 border-gray-700 hover:bg-gray-800"
+            onClick={copyMeetingLink}
+          >
+            <Copy className="w-4 h-4 mr-2" />
+            Copy meeting link
+          </Button>
+        </div>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="bg-red-500 hover:bg-red-600"
+          onClick={() => window.location.href = '/'}
+        >
+          Leave
+        </Button>
+      </div>
+
+      {/* Video Grid */}
+      <div className="flex-1 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Local Video */}
+          <div className="relative aspect-video bg-[#1A1C23] rounded-xl overflow-hidden">
+            {stream && (
+              <Video
+                stream={stream}
+                className="w-full h-full object-cover"
+              />
+            )}
+            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+              <span className="bg-black/50 px-3 py-1 rounded-lg text-sm">
+                You
+              </span>
+            </div>
+          </div>
+
+          {/* Remote Peers */}
+          {peerIds.map((peerId) => (
+            <RemotePeer key={peerId} peerId={peerId} />
+          ))}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className='max-w-7xl mx-auto p-4'>
-        {state === 'idle' ? (
-          <div className="max-w-md mx-auto mt-16 p-8 bg-gradient-to-b from-white to-gray-50 rounded-2xl shadow-xl border border-gray-100">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Huddle</h2>
-              <p className="text-gray-500">Enter your name to join the meeting</p>
-            </div>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">Display Name</label>
-                <input
-                  id="displayName"
-                  disabled={state !== 'idle'}
-                  placeholder='Enter your name'
-                  type='text'
-                  className='w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-colors placeholder:text-gray-400'
-                  value={displayName}
-                  onChange={(event) => setDisplayName(event.target.value)}
-                />
-              </div>
-              <Button
-                disabled={!displayName}
-                className="w-full py-6 text-lg font-medium shadow-lg shadow-blue-500/20 transition-transform hover:scale-[1.02]"
-                onClick={async () => {
-                  const token = await getToken();
-                  await joinRoom({
-                    roomId: params.roomId as string,
-                    token,
-                  });
-                }}
-              >
-                Join Meeting
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className='grid grid-cols-1 lg:grid-cols-4 gap-4'>
-            {/* Video Section */}
-            <div className='lg:col-span-4 space-y-4'>
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                {stream && (
-                  <div className='relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50'>
-                    <Video stream={stream} className='absolute inset-0 w-full h-full object-cover' />
-                    <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg text-white text-sm">
-                      You
-                    </div>
-                  </div>
-                )}
-                {shareStream && (
-                  <div className='relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50'>
-                    <Video stream={shareStream} className='absolute inset-0 w-full h-full object-cover' />
-                    <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg text-white text-sm">
-                      Your Screen
-                    </div>
-                  </div>
-                )}
-              </div>
+      {/* Controls */}
+      <Dock className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-[#1A1C23] border border-gray-800 rounded-xl shadow-lg">
+        <DockIcon
+          onClick={() => isAudioOn ? disableAudio() : enableAudio()}
+          className={isAudioOn ? "bg-gray-700 hover:bg-gray-600" : "bg-red-500 hover:bg-red-600"}
+        >
+          {isAudioOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+        </DockIcon>
+        <DockIcon
+          onClick={() => isVideoOn ? disableVideo() : enableVideo()}
+          className={isVideoOn ? "bg-gray-700 hover:bg-gray-600" : "bg-red-500 hover:bg-red-600"}
+        >
+          {isVideoOn ? <VideoIcon className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+        </DockIcon>
+        <DockIcon
+          onClick={() => shareStream ? stopScreenShare() : startScreenShare()}
+          className="bg-gray-700 hover:bg-gray-600"
+        >
+          <MonitorUp className="w-5 h-5" />
+        </DockIcon>
+        <DockIcon
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          className={`bg-gray-700 hover:bg-gray-600 ${isChatOpen ? 'text-blue-500' : ''}`}
+        >
+          <MessageCircle className="w-5 h-5" />
+        </DockIcon>
+        <DockIcon
+          onClick={() => window.location.href = '/'}
+          className="bg-red-500 hover:bg-red-600"
+        >
+          <PhoneOff className="w-5 h-5" />
+        </DockIcon>
+      </Dock>
 
-              {/* Peers Grid */}
-              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-                {peerIds.map((peerId) =>
-                  peerId ? <RemotePeer key={peerId} peerId={peerId} /> : null
-                )}
-              </div>
-
-              {/* Controls */}
-              <Dock className="fixed bottom-4 left-1/2 -translate-x-1/2">
-                <DockIcon>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleVideo}
-                    className={`hover:bg-zinc-800 ${!isVideoOn && 'bg-red-500 hover:bg-red-600'}`}
-                  >
-                    {isVideoOn ? (
-                      <VideoIcon className="h-6 w-6" />
-                    ) : (
-                      <VideoOff className="h-6 w-6" />
-                    )}
-                  </Button>
-                </DockIcon>
-
-                <DockIcon>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleAudio}
-                    className={`hover:bg-zinc-800 ${!isAudioOn && 'bg-red-500 hover:bg-red-600'}`}
-                  >
-                    {isAudioOn ? (
-                      <Mic className="h-6 w-6" />
-                    ) : (
-                      <MicOff className="h-6 w-6" />
-                    )}
-                  </Button>
-                </DockIcon>
-
-                <DockIcon>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleScreenShare}
-                    className="hover:bg-zinc-800"
-                  >
-                    <MonitorUp className="h-6 w-6" />
-                  </Button>
-                </DockIcon>
-
-                <DockIcon>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsChatOpen(!isChatOpen)}
-                    className={`hover:bg-zinc-800 ${isChatOpen && 'bg-red-500 hover:bg-red-600'}`}
-                  >
-                    <MessageCircle className="h-6 w-6" />
-                  </Button>
-                </DockIcon>
-
-                <DockIcon>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={leaveRoom}
-                    className="bg-red-500 hover:bg-red-600"
-                  >
-                    <PhoneOff className="h-6 w-6" />
-                  </Button>
-                </DockIcon>
-              </Dock>
-            </div>
-
-            {/* Chat Section */}
-            {state === 'connected' && (
-              <ChatBox isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
-            )}
-          </div>
-        )}
-      </div>
-    </main>
+      {/* Chat */}
+      <ChatBox isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+    </div>
   );
 }

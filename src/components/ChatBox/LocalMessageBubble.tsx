@@ -6,19 +6,14 @@ interface LocalMessageBubbleProps {
   message: TMessage;
 }
 
-function LocalMessageBubble({ message }: LocalMessageBubbleProps) {
+export default function LocalMessageBubble({ message }: { message: TMessage }) {
   const { metadata } = useLocalPeer<TPeerMetadata>();
 
   return (
-    <div className="flex flex-col items-end space-y-1">
-      <div className="flex items-center justify-end space-x-2">
-        <span className="text-xs text-gray-500">You</span>
-      </div>
-      <div className="bg-blue-600 text-white px-4 py-2 rounded-2xl rounded-tr-sm max-w-[85%]">
-        {message.text}
+    <div className="flex justify-end">
+      <div className="bg-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-[80%]">
+        <p className="text-sm">{message.text}</p>
       </div>
     </div>
   );
 }
-
-export default LocalMessageBubble;
