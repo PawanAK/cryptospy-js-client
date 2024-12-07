@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { motion } from "framer-motion"
-import { Video, Users, Shield, Calendar } from 'lucide-react'
+import { TrendingUp, Zap, Brain, Coins } from 'lucide-react'
 import Image from 'next/image'
 
 interface LandingPageProps {
@@ -14,14 +14,14 @@ export function LandingPage({ onCreateRoom }: LandingPageProps) {
       {/* Navigation */}
       <nav className="w-full px-6 py-4 flex items-center justify-between border-b border-gray-700">
         <div className="flex items-center space-x-2">
-          <Image src="/huddle-logo.png" alt="Huddle Logo" width={40} height={40} />
-          <span className="text-xl font-medium text-gray-100">Huddle</span>
+          <Image src="https://res.cloudinary.com/dsvjf1ede/image/upload/v1733581762/nlclnj9cksrfy8umt9zt.jpg" alt="CryptoSpy Logo" width={60} height={60} />
+          <span className="text-xl font-medium text-gray-100">CryptoSpy</span>
         </div>
         <Button 
           onClick={onCreateRoom}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full"
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full"
         >
-          New meeting
+          Create Room
         </Button>
       </nav>
 
@@ -35,24 +35,24 @@ export function LandingPage({ onCreateRoom }: LandingPageProps) {
             className="space-y-8"
           >
             <h1 className="text-4xl md:text-6xl font-bold text-gray-100 leading-tight">
-              Premium video meetings. Now free for everyone.
+              Real-time crypto intel for your meetings.
             </h1>
             <p className="text-xl text-gray-300">
-              We re-engineered the service we built for secure business meetings to make it free and available for all.
+              CryptoSpy delivers real-time cryptocurrency price updates with a sleek, no-BS interface. Stay ahead in the crypto game—anytime, anywhere.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button 
                 onClick={onCreateRoom}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 rounded-md text-lg flex items-center space-x-2"
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 rounded-md text-lg flex items-center space-x-2"
               >
-                <Video className="w-5 h-5" />
-                <span>New Meeting</span>
+                <TrendingUp className="w-5 h-5" />
+                <span>Create Room</span>
               </Button>
               <Button 
                 variant="outline"
                 className="border-2 px-8 py-6 rounded-md text-lg text-gray-300 hover:bg-gray-700"
               >
-                Enter meeting code
+                View Demo
               </Button>
             </div>
           </motion.div>
@@ -64,19 +64,19 @@ export function LandingPage({ onCreateRoom }: LandingPageProps) {
             className="grid gap-6"
           >
             <FeatureCard
-              icon={Users}
-              title="See everyone together"
-              description="Up to 100 participants can join a meeting"
+              icon={Zap}
+              title="Lightning-fast updates"
+              description="Get real-time cryptocurrency price updates in seconds"
             />
             <FeatureCard
-              icon={Shield}
-              title="Safe and secure"
-              description="End-to-end encryption keeps your meetings private"
+              icon={Brain}
+              title="AI-powered analysis"
+              description="AI analyzes meetings live and provides relevant price info"
             />
             <FeatureCard
-              icon={Calendar}
-              title="Easy scheduling"
-              description="Integrate with your calendar for seamless scheduling"
+              icon={Coins}
+              title="Comprehensive coverage"
+              description="Track prices for all major cryptocurrencies and tokens"
             />
           </motion.div>
         </div>
@@ -89,8 +89,8 @@ function FeatureCard({ icon: Icon, title, description }: { icon: any, title: str
   return (
     <Card className="p-6 border rounded-xl hover:shadow-lg transition-shadow bg-gray-800 border-gray-700">
       <div className="flex items-start space-x-4">
-        <div className="bg-blue-100 p-3 rounded-lg">
-          <Icon className="w-6 h-6 text-blue-600" />
+        <div className="bg-green-100 p-3 rounded-lg">
+          <Icon className="w-6 h-6 text-green-600" />
         </div>
         <div>
           <h3 className="font-semibold text-gray-100">{title}</h3>
@@ -100,3 +100,4 @@ function FeatureCard({ icon: Icon, title, description }: { icon: any, title: str
     </Card>
   );
 }
+
