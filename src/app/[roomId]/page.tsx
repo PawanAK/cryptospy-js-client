@@ -16,6 +16,7 @@ import { Inter } from 'next/font/google';
 import { useEffect, useRef, useState } from 'react';
 import { Copy, Mic, MicOff, Video as VideoIcon, VideoOff, MonitorUp, PhoneOff, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dock, DockIcon } from '@/components/ui/dock';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -54,6 +55,22 @@ export default function Home({ params }: { params: { roomId: string } }) {
     setTimeout(() => setShowCopiedToast(false), 2000);
   };
 
+  const toggleVideo = async () => {
+    isVideoOn ? await disableVideo() : await enableVideo();
+  };
+
+  const toggleAudio = async () => {
+    isAudioOn ? await disableAudio() : await enableAudio();
+  };
+
+  const toggleScreenShare = async () => {
+    shareStream ? await stopScreenShare() : await startScreenShare();
+  };
+
+  const leaveRoom = () => {
+    window.location.href = '/';
+  };
+
   return (
     <main className={`min-h-screen bg-white ${inter.className}`}>
       {/* Header Section */}
@@ -83,7 +100,7 @@ export default function Home({ params }: { params: { roomId: string } }) {
               variant="destructive"
               size="sm"
               className="flex items-center space-x-2"
-              onClick={() => window.location.href = '/'}
+              onClick={leaveRoom}
             >
               <PhoneOff className="w-4 h-4" />
               <span>Leave</span>
@@ -159,46 +176,70 @@ export default function Home({ params }: { params: { roomId: string } }) {
               </div>
 
               {/* Controls */}
-              <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-white p-4 rounded-full shadow-lg">
-                <Button
-                  variant={isAudioOn ? "outline" : "destructive"}
-                  size="icon"
-                  className="rounded-full"
-                  onClick={async () => {
-                    isAudioOn ? await disableAudio() : await enableAudio();
-                  }}
-                >
-                  {isAudioOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-                </Button>
-                <Button
-                  variant={isVideoOn ? "outline" : "destructive"}
-                  size="icon"
-                  className="rounded-full"
-                  onClick={async () => {
-                    isVideoOn ? await disableVideo() : await enableVideo();
-                  }}
-                >
-                  {isVideoOn ? <VideoIcon className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-                </Button>
-                <Button
-                  variant={shareStream ? "destructive" : "outline"}
-                  size="icon"
-                  className="rounded-full"
-                  onClick={async () => {
-                    shareStream ? await stopScreenShare() : await startScreenShare();
-                  }}
-                >
-                  <MonitorUp className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant={isChatOpen ? "destructive" : "outline"}
-                  size="icon"
-                  className="rounded-full"
-                  onClick={() => setIsChatOpen(!isChatOpen)}
-                >
-                  <MessageCircle className="w-5 h-5" />
-                </Button>
-              </div>
+              <Dock className="fixed bottom-4 left-1/2 -translate-x-1/2">
+                <DockIcon>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleVideo}
+                    className={`hover:bg-zinc-800 ${!isVideoOn && 'bg-red-500 hover:bg-red-600'}`}
+                  >
+                    {isVideoOn ? (
+                      <VideoIcon className="h-6 w-6" />
+                    ) : (
+                      <VideoOff className="h-6 w-6" />
+                    )}
+                  </Button>
+                </DockIcon>
+
+                <DockIcon>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleAudio}
+                    className={`hover:bg-zinc-800 ${!isAudioOn && 'bg-red-500 hover:bg-red-600'}`}
+                  >
+                    {isAudioOn ? (
+                      <Mic className="h-6 w-6" />
+                    ) : (
+                      <MicOff className="h-6 w-6" />
+                    )}
+                  </Button>
+                </DockIcon>
+
+                <DockIcon>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleScreenShare}
+                    className="hover:bg-zinc-800"
+                  >
+                    <MonitorUp className="h-6 w-6" />
+                  </Button>
+                </DockIcon>
+
+                <DockIcon>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsChatOpen(!isChatOpen)}
+                    className={`hover:bg-zinc-800 ${isChatOpen && 'bg-red-500 hover:bg-red-600'}`}
+                  >
+                    <MessageCircle className="h-6 w-6" />
+                  </Button>
+                </DockIcon>
+
+                <DockIcon>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={leaveRoom}
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                    <PhoneOff className="h-6 w-6" />
+                  </Button>
+                </DockIcon>
+              </Dock>
             </div>
 
             {/* Chat Section */}
