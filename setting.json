@@ -1,0 +1,72 @@
+{
+  "tabnine.experimentalAutoImports": true,
+  "githubIssues.ignoreMilestones": [],
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "workbench.iconTheme": "material-icon-theme",
+  "eslint.codeActionsOnSave.rules": null,
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "autoimport.showNotifications": true,
+  "autoimport.filesToScan": "**/*.{ts,tsx,js,jsx}",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "security.workspace.trust.untrustedFiles": "open",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python"
+  },
+  "chatgpt.lang": "en",
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  },
+
+  "githubPullRequests.pullBranch": "never",
+  "redhat.telemetry.enabled": true,
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "editor.inlineSuggest.suppressSuggestions": true,
+  "workbench.colorTheme": "Monokai Pro",
+  "terminal.integrated.env.windows": {},
+  "console-ninja.featureSet": "Community",
+  "workbench.sideBar.location": "right",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": true,
+    "markdown": false,
+    "scminput": false
+  },
+  "python.analysis.autoImportCompletions": true,
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "naumovs.color-highlight.markerType": "dot-before",
+  "naumovs.color-highlight.markRuler": true,
+  "color-highlight.matchRgbWithNoFunction": true,
+  "color-highlight.matchWords": true,
+  "color-highlight.matchHslWithNoFunction": true,
+  "workbench.editorAssociations": {
+    "*.epub": "default"
+  },
+  "github.copilot.editor.enableAutoCompletions": true,
+  "prisma.showPrismaDataPlatformNotification": false,
+  "editor.matchBrackets": false,
+  "git.autofetch": true,
+  "oracledevtools.connectionConfiguration.configFilesFolder": "C:\\Users\\CSC\\Oracle\\network\\admin",
+  "[oraclesql]": {
+    "editor.suggest.showSnippets": true,
+    "editor.quickSuggestions": {
+      "comments": "on",
+      "strings": "on",
+      "other": "on"
+    }
+  },
+  "oracledevtools.connectionConfiguration.walletFileFolder": "C:\\Users\\CSC\\Oracle\\network\\admin",
+  "oracledevtools.bookmarkFileFolder": "C:\\Users\\CSC\\Oracle\\oracle.oracledevtools",
+  "oracledevtools.download.otherFolder": "C:\\Users\\CSC\\downloads",
+  "editor.fontFamily": "JetBrains Mono",
+  "editor.fontLigatures": true,
+  "security.allowedUNCHosts": ["wsl.localhost"]
+}
